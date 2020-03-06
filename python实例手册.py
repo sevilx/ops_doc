@@ -6,7 +6,7 @@
 0 说明
 
     手册制作: 雪松 littlepy www.51reboot.com
-    更新日期: 2016-01-21
+    更新日期: 2020-03-06
 
     欢迎系统运维加入Q群: 198173206  # 加群请回答问题
     欢迎运维开发加入Q群: 365534424  # 不定期技术分享
@@ -16,7 +16,6 @@
     错误在所难免, 还望指正！
 
     [python实例手册] [shell实例手册] [LazyManage运维批量管理(shell/python两个版本)]
-    网盘更新下载地址:    http://pan.baidu.com/s/1sjsFrmX
     github更新下载地址:  https://github.com/liquanzhou/ops_doc
 
 1 基础
@@ -34,10 +33,11 @@
         ln -s /usr/local/python27/bin/python /usr/bin/python
         python          # 查看版本
 
-        解决YUM无法使用的问题
+    解决YUM无法使用的问题
 
-           vim /usr/bin/yum
-           首行#!/usr/bin/python 替换为老版本python  #!/usr/bin/python2.4  注意可能为2.6
+       vim /usr/bin/yum
+       vim /usr/bin/repoquery
+       两文件首行#!/usr/bin/python 替换为老版本python  #!/usr/bin/python2.6  注意可能为2.4
 
     pip模块安装
 
@@ -69,6 +69,7 @@
             . /etc/profile
 
         pip freeze                      # 查看包版本
+        pip install -r file             # 安装包文件列表
         pip install Package             # 安装包 pip install requests
         pip show --files Package        # 查看安装包时安装了哪些文件
         pip show --files Package        # 查看哪些包有更新
@@ -76,6 +77,11 @@
         pip uninstall Package           # 卸载软件包
         pip list                        # 查看pip安装的包及版本
         pip install django==1.5         # 指定版本安装
+        pip install  kafka-python -i http://pypi.douban.com/simple --trusted-host pypi.douban.com
+
+
+    python3安装
+        yum install python36.x86_64 python36-pip
 
     查看帮助
 
@@ -134,7 +140,7 @@
         shoplist[::-1]    # 倒着打印 对字符翻转串有效
         shoplist[2::3]    # 从第二个开始每隔三个打印
         shoplist[:-1]     # 排除最后一个
-        '\t'.join(li)     # 将列表转换成字符串 用字表符分割
+        '\t'.join(li)     # 将列表转字符串 用字表符分割
         sys.path[1:1]=[5] # 在位置1前面插入列表中一个值
         list(set(['qwe', 'as', '123', '123']))   # 将列表通过集合去重复
         eval("['1','a']")                        # 将字符串当表达式求值,得到列表
@@ -378,8 +384,8 @@
                     print"method print"
 
             Instance = A()
-            print getattr(Instance , 'name', 'not find')           # 如果Instance 对象中有属性name则打印self.name的值，否则打印'not find'
-            print getattr(Instance , 'age', 'not find')            # 如果Instance 对象中有属性age则打印self.age的值，否则打印'not find'
+            print getattr(Instance, 'name',   'not find')          # 如果Instance 对象中有属性name则打印self.name的值，否则打印'not find'
+            print getattr(Instance, 'age',    'not find')          # 如果Instance 对象中有属性age则打印self.age的值，否则打印'not find'
             print getattr(Instance, 'method', 'default')           # 如果有方法method，否则打印其地址，否则打印default
             print getattr(Instance, 'method', 'default')()         # 如果有方法method，运行函数并打印None否则打印default
 
@@ -456,7 +462,7 @@
         读文件
             f = file('/etc/passwd','r')
             c = f.read().strip()        # 读取为一个大字符串，并去掉最后一个换行符
-            for i in c.spilt('\n'):     # 用换行符切割字符串得到列表循环每行
+            for i in c.split('\n'):     # 用换行符切割字符串得到列表循环每行
                 print i
             f.close()
 
@@ -583,11 +589,11 @@
         string.upper()                                # 转换字符串中所有小写为大写
         string.lstrip()                               # 去掉string左边的空格
         string.rstrip()                               # 去掉string字符末尾的空格
-        string.replace(str1,str2,num=string.count(str1))  # 把string中的str1替换成str2,如果num指定,则替换不超过num次
+        string.replace(str1,str2)                     # 把string中的str1替换成str2,如果num指定,则替换不超过num次
         string.startswith(obj,beg=0,end=len(string))  # 检测字符串是否以obj开头
         string.zfill(width)                           # 返回字符长度为width的字符,原字符串右对齐,前面填充0
         string.isdigit()                              # 只包含数字返回True
-        string.split("分隔符")                        # 把string切片成一个列表
+        string.split("/")                             # 把string切片成一个列表
         ":".join(string.split())                      # 以:作为分隔符,将所有元素合并为一个新的字符串
 
     字典内建方法
@@ -864,6 +870,15 @@
         ord('4')                    # 字符转ASCII码
         chr(52)                     # ASCII码转字符
 
+        设置读取编码为utf8 避免转换出错
+
+            #!/usr/bin/env python
+            # -*- coding: utf-8 -*-
+
+            import sys
+            reload(sys)
+            sys.setdefaultencoding('utf-8')
+
     遍历递归
 
         [os.path.join(x[0],y) for x in os.walk('/root/python/5') for y in x[2]]
@@ -943,6 +958,10 @@
         sys.stdin.readline()  # 从标准输入读一行
         sys.stdout.write("a") # 屏幕输出a
         sys.path.insert(1, os.path.join(sys.path[0], '/opt/script/'))     # 将/opt/script/目录加入环境变量，可导入相应模块
+    commands        [执行系统操作]
+
+        (status, output) = commands.getstatusoutput('cat /proc/cpuinfo')
+        print status, output
 
     os              [系统模块]
 
@@ -951,7 +970,7 @@
         os.system()                # 得到返回状态 返回无法截取
         os.name                    # 返回系统平台 Linux/Unix用户是'posix'
         os.getenv()                # 读取环境变量
-        os.putenv()                # 设置环境变量
+        os.environ['A']='1'        # 设置环境变量
         os.getcwd()                # 当前工作路径
         os.chdir()                 # 改变当前工作目录
         os.walk('/root/')          # 递归路径
@@ -1049,6 +1068,8 @@
 
     commands        [执行系统命令]
 
+        (status, output) = commands.getstatusoutput('cat /proc/cpuinfo')
+        print status, output
         commands.getstatusoutput('id')       # 返回元组(状态,标准输出)
         commands.getoutput('id')             # 只返回执行的结果, 忽略返回值
         commands.getstatus('file')           # 返回ls -ld file执行的结果
@@ -1212,7 +1233,7 @@
                 try:
                     send_smtp = smtplib.SMTP()
                     send_smtp.connect(mail_host)
-                    send_smtp.login(mail_user, mail_pass)
+                    send_smtp.login(mail_user+"@"+mail_postfix, mail_pass)
                     send_smtp.sendmail(me, to_list, msg.as_string())
                     send_smtp.close()
                     return True
@@ -1339,6 +1360,16 @@
         time.strftime('%Y-%m-%d_%X',time.localtime( time.time() ) )              # 时间戳转日期
         time.mktime(time.strptime('2012-03-28 06:53:40', '%Y-%m-%d %H:%M:%S'))   # 日期转时间戳
 
+        最近的周五
+
+            from datetime import datetime
+            from dateutil.relativedelta import relativedelta, FR
+            (datetime.now() + relativedelta(weekday=FR(-1))).strftime('%Y%m%d')
+
+        获取本周一
+            import  datetime
+            datetime.date.today() - datetime.timedelta(days=datetime.date.today().weekday())
+
         判断输入时间格式是否正确
 
             #encoding:utf8
@@ -1448,11 +1479,14 @@
     subprocess      [子进程管理]
 
         import subprocess
-        s=subprocess.Popen('ls', shell=True, \
+        s=subprocess.Popen('sleep 20', shell=True, \
                 stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        print s.wait()         # 阻塞等待子进程完成并返回状态码 shell 0为正确  但管道内容过多会造成死锁可以用 communicate()
         print s.stdout.read()
         print s.stderr.read()
-        print s.wait()         # 等待子进程结束。并返回执行状态 shell 0为正确
+
+        print s.communicate()     # 返回元组 (stdout, stderr)  会阻塞等待进程完成 推荐使用
+        print s.returncode        # 返回执行状态码
 
     base64          [编码]
 
@@ -1571,6 +1605,41 @@
         string.digits          # 0-9
         string.printable       # 所有字符
         string.whitespace      # 空白字符
+
+    Gittle          [python的git库]
+
+        pip install gittle
+        from gittle import Gittle
+        repo_path = '/tmp/gittle_bare'
+        repo_url = 'git://github.com/FriendCode/gittle.git'
+        repo = Gittle.clone(repo_url, repo_path)
+        auth = GittleAuth(pkey=key)                           # 认证
+        Gittle.clone(repo_url, repo_path, auth=auth)
+        repo = Gittle.clone(repo_url, repo_path, bare=True)   # 克隆仓库没有目录的
+        repo = Gittle.init(path)                     # 初始化
+        repo.commits                                 # 获取提交列表
+        repo.branches                                # 获取分支列表
+        repo.modified_files                          # 被修改的文件列表
+        repo.diff('HEAD', 'HEAD~1')                  # 获取最新提交差异
+        repo.stage('file.txt')                       # 提交文件
+        repo.stage(['other1.txt', 'other2.txt'])     # 提交文件列表
+        repo.commit(name="Samy Pesse", email="samy@friendco.de", message="This is a commit")  # 更新信息
+
+        repo = Gittle(repo_path, origin_uri=repo_url)
+        key_file = open('/Users/Me/keys/rsa/private_rsa')
+        repo.auth(pkey=key_file)
+        repo.push()                                   # 远端push提交操作
+
+        repo = Gittle(repo_path, origin_uri=repo_url)
+        key_file = open('/Users/Me/keys/rsa/private_rsa')
+        repo.auth(pkey=key_file)
+        repo.pull()                                   # 拉取最新分支
+
+        repo.create_branch('dev', 'master')           # 创建分支
+        repo.switch_branch('dev')                     # 切换到分支
+        repo.create_orphan_branch('NewBranchName')    # 创建一个空的分支
+        repo.remove_branch('dev')                     # 删除分支
+
 
     paramiko        [ssh客户端]
 
@@ -1965,12 +2034,6 @@
                 %(process)d        # 打印进程ID
                 %(message)s        # 打印日志信息
 
-        logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-                        datefmt='%a, %d %b %Y %H:%M:%S',
-                        filename='myapp.log',
-                        filemode='w')
-        # 日志级别warning或高于warning的会写入文件 myapp.log 中
 
         logging.config.fileConfig("logger.conf")        # 加载配置文件
         logger = logging.getLogger("example02")         # 使用已定义的日志记录器
@@ -2016,6 +2079,21 @@
             [formatter_form02]
             format=%(name)-12s: %(levelname)-8s %(message)s
             datefmt=
+
+
+        通用日志记录
+            import logging
+
+            logging.basicConfig(level=logging.DEBUG,
+                            format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                            datefmt='%Y-%m-%d %H:%M:%S',
+                            filename='/var/log/myapp.log',
+                            filemode='a')
+            # 日志级别DEBUG或高于DEBUG的会写入文件 myapp.log 中
+            logging.debug('debug message')
+            logging.info('info message')
+            logging.warning('warning message')
+
 
     ConfigParser    [配置解析]
 
@@ -2378,6 +2456,15 @@
         psutil.Process(PID).memory_percent()   # 进程内存使用率
         psutil.Process(PID).io_counters()      # 进程IO信息
         psutil.Process(PID).num_threads()      # 进程线程数
+
+    ldap            [统一认证]
+        yum install openldap  openldap-clients openldap-devel openssl-devel setuptools==30.1.0
+        sudo pip uninstall ldap ldap3
+        pip install python-ldap
+        import ldap
+        con = ldap.initialize("ldap://10.10.10.156:389")
+        con.simple_bind_s("cn=admin,ou=People,dc=gt,dc=com", "pwd")
+        res = con.search_s("dc=gt,dc=com", ldap.SCOPE_SUBTREE, '(uid=*)', ['*', '+'], 0)
 
     watchdog        [监视文件实时写入]
 
@@ -3345,6 +3432,40 @@
     for i in result[0]:
         print i
 
+
+
+    mysql链接失败重试
+
+        import MySQLdb as mysql
+        import time
+
+        class my():
+            def executeSQL(self, sql="select * from `serverinfo` limit 1;"):
+                while True:
+                    try:
+                        self.conn.ping()
+                        break
+                    except Exception,e:
+                        print('warning: mysql test ping fail')
+                        print(str(e))
+                    try:
+                        self.conn = mysql.connect(user="opsdeploy", passwd="123456", host='172.222.50.50', port=3306, db="ops_deploy", connect_timeout=10, compress=True, charset="utf8")
+                        self.cursor = self.conn.cursor()
+                        break
+                    except Exception,e:
+                        print("mysql reconnect fail ...")
+                        print(str(e))
+                        time.sleep(2)
+                try:
+                    self.cursor.execute(sql)
+                    self.conn.commit()
+                    print self.cursor.fetchall()
+                except Exception,e:
+                    print(str(e))
+        m=my()
+        m.executeSQL()
+
+
 5 处理信号
 
     信号的概念
@@ -3514,6 +3635,19 @@
            print post['name']
         db.project.remove()
 
+        # 执行mongo命令
+        # https://api.mongodb.com/python/current/api/pymongo/database.html
+        db.command("filemd5", object_id, root=file_root)
+        db.command("dropUser", "user")
+        db.command("createUser", "admin", pwd="password", roles=["root"])
+        for x,y in db.command("currentOp").items():
+            print x,y
+
+        # currentOp在mongo3.9废弃,建议使用 aggregate()
+        with client.admin.aggregate([{"$currentOp": {}}]) as cursor:
+            for operation in cursor:
+                print(operation)
+
     python使用redis
 
         https://pypi.python.org/pypi/redis                  # redis的python官网
@@ -3526,7 +3660,7 @@
         rds.info()                           # redis信息
         rds.set(key, value)                  # 将值value关联到key
         rds.get(key)                         # 取key值
-        rds.del(key1,key2)                   # 删除key
+        rds.delete(key1,key2)                # 删除key
         rds.rename(key,new_key2)             # 将key改名 存在覆盖
         rds.seten(key,value)                 # 将值value关联到key,如果key存在不做任何动作
         rds.setex(key, value, 10800)         # 将值value关联到key,并设置key的过期时间
@@ -3617,7 +3751,103 @@
         task.data     # take task and read data from it
         task.ack()    # move this task into state DONE
 
-7 web页面操作
+    python-etcd
+
+        http://python-etcd.readthedocs.io/en/latest/
+
+        pip install python-etcd
+        import etcd
+        client = etcd.Client(host='etcd-01', port=2379)
+        client = etcd.Client( (('etcd-01', 2379), ('etcd-02', 2379), ('etcd-03', 2379)) ,allow_reconnect=True)   # 集群多IP  allow_reconnect 允许重连
+
+        # 增加 目录必须存在 # 目录: /v1/xuesong/
+        client.write('/v1/xuesong/10.10.10.10:8080', 'test')
+        # 获取指定路径的值
+        r = client.read('/v1/xuesong/10.10.10.10:8080' , recursive=True, sorted=True)
+        r.value
+        # 删除指定路径
+        client.delete('/v1/xuesong/10.10.10.10:8080')
+
+        # with ttl
+        client.write('/nodes/n2', 2, ttl=4)  # sets the ttl to 4 seconds
+        # create only
+        client.write('/nodes/n3', 'test', prevExist=False)
+        # Compare and swap values atomically
+        client.write('/nodes/n3', 'test2', prevValue='test1')    #this fails to write
+        client.write('/nodes/n3', 'test2', prevIndex=10)         #this fails to write
+        # mkdir
+        client.write('/nodes/queue', None, dir=True)
+        # Append a value to a queue dir
+        client.write('/nodes/queue', 'test', append=True)        #will write i.e. /nodes/queue/11
+        client.write('/nodes/queue', 'test2', append=True)       #will write i.e. /nodes/queue/12
+
+        client.read('/nodes/n2').value                           # 获取单个键值
+        r = client.read('/nodes', recursive=True, sorted=True)   # 递归查询目录
+        for i in r.children:
+            if not i.dir:
+                print("%s: %s" % (child.key,child.value))
+
+        client.read('/nodes/n2', wait=True) #Waits for a change in value in the key before returning.
+        client.read('/nodes/n2', wait=True, waitIndex=10)
+
+        try:
+            client.read('/invalid/path')
+        except etcd.EtcdKeyNotFound:
+            print "error"
+
+        client.delete('/nodes/n1')
+        client.delete('/nodes', dir=True)             #spits an error if dir is not empty
+        client.delete('/nodes', recursive=True)       #this works recursively
+
+        client.watch('/nodes/n1', recursive=True,timeout=0)        # 递归获取改变值 阻塞直到有改变
+
+        # watch只会阻塞监视之后的一次改动，所以必须先递归read下所有路径，然后根据每次的watch进行更改
+        # 第一次read的时候，需要记录 etcd_index+1作为下一次watch的索引
+        index = client.read('/nodes/n1', recursive=True).etcd_index
+        while 1:
+            # watch后的索引是 modifiedIndex+1传给下一次的watch
+            index = client.watch('/nodes/n1', recursive=True, timeout=0, index=index+1).modifiedIndex
+
+
+    python操作zookeeper
+        https://kazoo.readthedocs.io/en/latest/basic_usage.html
+
+        pip install kazoo
+        from kazoo.client import KazooClient
+
+        zk = KazooClient(hosts='127.0.0.1:2181', read_only=True)
+        zk.start()
+        zk.get_children('/')
+        zk.stop()
+
+
+    python操作elasticsearch
+
+        http://elasticsearch-py.readthedocs.io/en/master/
+
+        from datetime import datetime
+        from elasticsearch import Elasticsearch
+
+        es = Elasticsearch(["host1", "host2"])
+
+        doc = {
+            'author': 'kimchy',
+            'text': 'Elasticsearch: cool. bonsai cool.',
+            'timestamp': datetime.now(),
+        }
+
+        res = es.index(index="live-", doc_type='tweet', id=1, body=doc)
+        print(res['created'])
+
+        res = es.get(index="live-", doc_type='tweet', id=1)
+        print(res['_source'])
+
+        es.indices.refresh(index="live-")
+
+        res = es.search(index="live-", body={"query": {"match_all": {}}})
+
+
+7 http客户端
 
     urllib2        [网络资源访问]
 
@@ -3724,6 +3954,10 @@
         # 官方中文文档 http://cn.python-requests.org/zh_CN/latest/user/quickstart.html#id2
         # 安装: sudo pip install requests
         import requests
+
+        # 使用 logging 库时忽略 requests 库的日志
+        logging.getLogger("requests").setLevel(logging.WARNING)
+        logging.getLogger("urllib3").setLevel(logging.WARNING)
 
         # get方法提交表单
         url = r'http://dict.youdao.com/search?le=eng&q={0}'.format(word.strip())
@@ -3835,6 +4069,26 @@
             #也可以设置环境变量之间访问
             export HTTP_PROXY="http://10.10.1.10:3128"
             export HTTPS_PROXY="http://10.10.1.10:1080"
+
+
+        requests.session
+            import requests
+            import time
+            from bs4 import BeautifulSoup
+
+            session = requests.session()
+
+            login_url = "http://deploy.ixiaochuan.cn/login"
+            res_start = session.get(url=login_url)
+            bs = BeautifulSoup(res_start.text, "html.parser")
+            a = bs.select("#csrf_token")[0]
+            token = a.attrs.get("value")
+
+            login_data = {"username": (None, "weiqiang"), "password": (None, "Onei"), "submit": (None, "Login"),
+                          "csrf_token": (None, token)}
+            res = session.post(url=login_url, files=login_data, allow_redirects=False)
+            print("login success")
+
 
     BeautifulSoup  [html\xml解析器]
 
@@ -4131,6 +4385,16 @@
 
     #线程安全/竞争条件,锁/死锁检测,线程池,生产消费模型,伪并发,微线程,协程
     #Stackless Python 是Python编程语言的一个增强版本，它使程序员从基于线程的编程方式中获得好处，并避免传统线程所带来的性能与复杂度问题。Stackless为 Python带来的微线程扩展，是一种低开销、轻量级的便利工具
+
+    Queue队列
+        import Queue
+        q = = Queue.Queue(3)
+        
+        q.put('a', True, 5)              # True等待超时时间, False不等待
+        if q.full():                     # 队列满了返回True,反之False
+            q.qsize()                    # 队列长度
+            workQueue.queue.clear()      # 清空队列
+        q.get(True,5)                    # True等待超时时间, False不等待
 
     threading多线程
 
@@ -4497,8 +4761,8 @@
 
         q=Queue(size)       # 创建大小size的Queue对象
         qsize()             # 返回队列的大小(返回时候,可能被其他进程修改,近似值)
-        empty()             # 如果队列为空返回True，否则Fales
-        full()              # 如果队列已满返回True，否则Fales
+        empty()             # 如果队列为空返回True，否则False
+        full()              # 如果队列已满返回True，否则False
         put(item,block0)    # 把item放到队列中,如果给了block(不为0),函数会一直阻塞到队列中有空间为止
         get(block=0)        # 从队列中取一个对象,如果给了block(不为0),函数会一直阻塞到队列中有对象为止
         get_nowait          # 默认get阻塞，这个不阻塞
@@ -4894,6 +5158,75 @@
             if __name__ == "__main__":
                 app.run(host="0.0.0.0", port=50000, debug=True)
 
+        Flask-SQLAlchemy
+
+            http://www.pythondoc.com/flask-sqlalchemy/queries.html#id2
+            http://docs.jinkan.org/docs/flask-sqlalchemy/models.html#id2
+            https://www.cnblogs.com/mosson/p/6257147.html
+
+            db.create_all()   # 创建表
+
+            增加
+                admin = User('admin', 'admin@example.com')
+                db.session.add(admin)
+                db.session.add(guest)
+                db.session.commit()
+
+            查询
+                # 返回数组
+                users = User.query.all()
+                # 条件过滤 返回一个对象  不存在返回 返回none  像python传参数
+                peter = User.query.filter_by(username = 'peter').first()
+                # 条件过滤 像sql 可使用 ><
+                peter = User.query.filter(username == 'peter').first()
+                # 获取指定列的值
+                print peter.username
+                # 复杂查询 返回列表对象
+                User.query.filter(User.email.endswith('@example.com')).all()
+                # 对查询结果按指定列排序
+                User.query.order_by(User.username)
+                # 取前面的指定条数
+                User.query.limit(1).all()
+                # 通过主键来获取对象
+                User.query.get(1)
+                # 通配查询 ilike 忽略大小写
+                User.query.filter(User.username.ilike('online_%')).all()
+                User.query.filter(User.username.notilike('online_%')).all()
+
+            删除
+                user = User.query.get(id)
+                db.session.delete(user)
+                db.session.commit()
+                User.query.filter_by(id=123).delete()
+                User.query.filter(User.id == 123).delete()
+
+            改
+                db.session.query(Users).filter(Users.id > 2).update({"name" : "099"})
+                db.session.commit()
+
+
+                q = db.session.query(Toner)
+                q = q.filter(Toner.toner_id==1)
+                record = q.one()
+                record.toner_color = 'Azure Radiance'
+                db.session.flush()
+
+            连表
+                ret = session.query(Users, Favor).filter(Users.id == Favor.nid).all()
+                ret = session.query(Person).join(Favor).all()
+                ret = session.query(Person).join(Favor, isouter=True).all()
+
+            通配符
+                ret = session.query(Users).filter(Users.name.like('e%')).all()
+                ret = session.query(Users).filter(~Users.name.like('e%')).all()
+
+            排序
+                ret = session.query(Users).order_by(Users.name).all()                          # 正序
+                ret = session.query(Users).order_by(Users.name.desc()).all()                   # 倒序
+                ret = session.query(Users).order_by(Users.name.desc(), Users.id.asc()).all()
+
+
+
     twisted         [非阻塞异步服务器框架]
 
         # 较老 推荐使用 协程框架 或 微线程框架
@@ -4906,7 +5239,7 @@
             def dataReceived(self, data):
                 self.transport.write(data)
         class EchoFactory(protocol.Factory):
-            def buildProtocol(self, addr):
+            dDescribeInstanceStatusef buildProtocol(self, addr):
                 return Echo()
 
         endpoints.serverFromString(reactor, "tcp:1234").listen(EchoFactory())
@@ -4966,20 +5299,13 @@
         # 高可伸缩性和epoll非阻塞IO,响应快速,可处理数千并发连接,特别适用用于实时的Web服务 底层是gevent协程
         # http://www.tornadoweb.cn/documentation
         # http://old.sebug.net/paper/books/tornado/#_2
+        # http://demo.pythoner.com/itt2zh/ch5.html
+        # 非阻塞方式生成子进程
+        # https://github.com/vukasin/tornado-subprocess
 
         pip install tornado
 
-        tornado 源码分析系列目录
-
-            tornado 简介: http://www.cnblogs.com/Bozh/archive/2012/07/17/2596458.html
-            tornado 网络层IOLoop: http://www.cnblogs.com/Bozh/archive/2012/07/18/2597114.html
-            tornado 网络层IOLoop: http://www.cnblogs.com/Bozh/archive/2012/07/19/2598696.html
-            tornado Buffer层IOStream: http://www.cnblogs.com/Bozh/archive/2012/07/20/2600520.html
-            tornado HTTPServer层: http://www.cnblogs.com/Bozh/archive/2012/07/22/2603963.html
-            tornado HTTPServer详解: http://www.cnblogs.com/Bozh/archive/2012/07/24/2606765.html
-
-
-        get_argument()                # 方法来获取查询字符串参数，以及解析 POST 的内容
+        self.get_argument()           # 方法来获取查询字符串参数，以及解析 POST 的内容
         self.request.arguments        # 所有的 GET 或 POST 的参数
         self.request.files            # 所有通过 multipart/form-data POST 请求上传的文件
         self.request.path             # 请求的路径（ ? 之前的所有内容）
@@ -4991,13 +5317,11 @@
         # 异步 HTTP 客户端 两种模式 默认 SimpleAsyncHTTPClient  如果要修改为 CurlAsyncHTTPClient
         AsyncHTTPClient.configure('tornado.curl_httpclient.CurlAsyncHTTPClient')
 
+
         import tornado.ioloop
         import tornado.web
-
-        class MainHandler(tornado.web.RequestHandler):
-        import tornado.ioloop
-        import tornadotornado.web
         import tornado.httpclient
+        import json
 
 
         class MainHandler(tornado.web.RequestHandler):
@@ -5021,9 +5345,9 @@
 
             def on_response(self, response):
                 if response.error: raise tornado.web.HTTPError(500)
-                json = tornado.escape.json_decode(response.body)
-                self.write("Fetched " + str(len(json["entries"])) + " entries "
-                           "from the FriendFeed API")
+                jsondata = tornado.escape.json_decode(response.body)
+                print type(jsondata)
+                self.write(json.dumps(jsondata))
                 self.finish()
 
         class StoryHandler(tornado.web.RequestHandler):
@@ -5035,6 +5359,7 @@
                 (r"/", MainHandler),
                 (r"/template", Template),
                 (r"/story/([0-9]+)", StoryHandler),
+                (r"/tapi", urlhttp),
             ])
 
         if __name__ == "__main__":
@@ -5245,6 +5570,66 @@
 
             MM(6)
 
+    嵌套复杂排序
+
+        字典排序
+
+            按照键值(value)排序
+                # a = {'a': 'China', 'c': 'USA', 'b': 'Russia', 'd': 'Canada'}
+                b = sorted(a.items(), key=lambda x: x[1], reverse=True)
+                #[('c', 'USA'), ('b', 'Russia'), ('a', 'China'), ('d', 'Canada')]
+
+            按照键名(key)排序
+                #a = {'a': 'China', 'c': 'USA', 'b': 'Russia', 'd': 'Canada'}
+                b = sorted(a.items(), key=lambda x: x[0], reverse=True)
+                #[('d', 'Canada'), ('c', 'USA'), ('b', 'Russia'), ('a', 'China')]
+
+            嵌套字典, 按照字典键名(key)排序
+                #a = {'a': {'b':  'China'}, 'c': {'d': 'USA'}, 'b': {'c': 'Russia'}, 'd': {'a': 'Canada'}}
+                b = sorted(a.items(), key=lambda x: x[1], reverse=True)
+                #[('c', {'d': 'USA'}), ('b', {'c': 'Russia'}), ('a', {'b': 'China'}), ('d', {'a': 'Canada'})]
+
+            嵌套列表, 针对列表第一个元素排序( 其实直接写 x: x[1] 就是按照第一个值排序. )
+                #a = {'a': [1, 3], 'c': [3, 4], 'b': [0, 2], 'd': [2, 1]}
+                b = sorted(a.items(), key=lambda x: x[1][0], reverse=True)
+                #[('c', [3, 4]), ('d', [2, 1]), ('a', [1, 3]), ('b', [0, 2])]
+
+            嵌套列表, 按照列表其他元素排序  只需要修改列表对应的下标
+                # a = {'a': [1, 3], 'c': [3, 4], 'b': [0, 2], 'd': [2, 1]}
+                b = sorted(a.items(), key=lambda x: x[1][1], reverse=True)
+                # [('c', [3, 4]), ('a', [1, 3]), ('b', [0, 2]), ('d', [2, 1])]
+
+            # 总结:  此处使用lambda方法, x: x[1][1] 就可以看做是在访问字典的值, 想要按照哪个数值排序, 用相应的坐标对应即可, 但当字典过于复杂后, 应该选择用元组存储, 简化排序过程.
+
+
+        列表排序
+
+            1: 按照字母排序
+                # a = ['USA', 'China', 'Canada', 'Russia']
+                a.sort(reverse=True)
+                # ['USA', 'Russia', 'China', 'Canada']
+
+            2: 嵌套列表的排序, 按照子列表的其他值排序雷系, 修改x[0] 这里的下标即可
+                # a = [['USA', 'b'], ['China', 'c'], ['Canada', 'd'], ['Russia', 'a']]
+                a.sort(key=lambda x: x[0], reverse=True)
+                # [['USA', 'b'], ['Russia', 'a'], ['China', 'c'], ['Canada', 'd']]
+
+            3: 嵌套字典, 按照字典值(value) 排序
+                # a = [{'letter': 'b'}, {'letter': 'c'}, {'letter': 'd'}, {'letter': 'a'}]
+                a.sort(key=lambda x: x['letter'], reverse=True)
+                # [{'letter': 'd'}, {'letter': 'c'}, {'letter': 'b'}, {'letter': 'a'}]
+
+            4: 当字典值也是字典时, 这时候会优先按照键名排序, 再按照键值排序. 例子如下
+                # a = [{'letter': {'a': 'b'}}, {'letter': {'a': 'c'}}, {'letter': {'a': 'd'}}, {'letter': {'a': 'a'}}]
+                a.sort(key=lambda x: x['letter'], reverse=True)
+                # [{'letter': {'a': 'd'}}, {'letter': {'a': 'c'}}, {'letter': {'a': 'b'}}, {'letter': {'a': 'a'}}]
+
+            方法2:
+                # a = [{'letter': {'a': 'b'}}, {'letter': {'b': 'c'}}, {'letter': {'c': 'd'}}, {'letter': {'d': 'a'}}]
+                a.sort(key=lambda x: x['letter'], reverse=True)
+                #[{'letter': {'d': 'a'}}, {'letter': {'c': 'd'}}, {'letter': {'b': 'c'}}, {'letter': {'a': 'b'}}]
+
+
     1000以内是3或者是5的倍数的值的和
 
         sum([ num for num in range(1, 1000) if num % 3 == 0 or num % 5 == 0 ])
@@ -5274,6 +5659,180 @@
 
         a={'version01': {'nba': {'timenba': 'valuesasdfasdf', 'nbanbac': 'vtimefasdf', 'userasdf': 'vtimasdf'}}}
         eval(str(a).replace("time",""))
+
+
+    阿里云oss
+
+        https://help.aliyun.com/document_detail/32027.html?spm=5176.doc32026.6.674.AXf7Lw
+        pip install oss2
+
+        # -*- coding: utf-8 -*-
+        import oss2
+
+        auth = oss2.Auth('AccessKeyId', 'AccessKeySecret')
+        # 注意内外网域名 不带bucket
+        service = oss2.Service(auth, 'oss-cn-shanghai-internal.aliyuncs.com')
+
+        print([b.name for b in oss2.BucketIterator(service)])        # 查看存在的bucket
+
+        bucket = oss2.Bucket(auth, 'http://oss-cn-shanghai-internal.aliyuncs.com', 'ec-share')
+        # bucket.create_bucket(oss2.models.BUCKET_ACL_PRIVATE)       # 创建bucket
+        bucket.put_object_from_file('remote.txt','/tmp/local.txt')   # 上传文件
+        bucket.get_object_to_file('remote.txt', 'local-backup.txt')  # 下载文件
+        bucket.delete_object('remote.txt')                           # 删除文件
+
+
+    阿里云ecs
+        https://help.aliyun.com/document_detail/67117.html?spm=a2c4g.11186623.6.543.390360e41Cfpqm
+        pip install aliyun-python-sdk-core     # 安装阿里云SDK核心库
+        pip install aliyun-python-sdk-ecs      # 安装管理ECS的库
+
+        from aliyunsdkcore.client import AcsClient
+        from aliyunsdkcore.acs_exception.exceptions import ClientException
+        from aliyunsdkcore.acs_exception.exceptions import ServerException
+        from aliyunsdkecs.request.v20140526 import DescribeInstancesRequest
+        from aliyunsdkecs.request.v20140526 import StopInstanceRequest
+        client = AcsClient(
+           "your-access-key-id", 
+           "your-access-key-secret",
+           "your-region-id"
+        );
+        request = DescribeInstancesRequest.DescribeInstancesRequest()
+        request.set_PageSize(10)
+        try:
+            response = client.do_action_with_exception(request)
+            print response
+        except ServerException as e:
+            print e
+        except ClientException as e:
+        print e
+
+
+        # 使用CommonRequest的方式调用ECS的 DescribeInstanceStatus 接口
+
+        from aliyunsdkcore.client import AcsClient
+        from aliyunsdkcore.request import CommonRequest
+        client = AcsClient('your_access_key_id', 'your_access_key_secret', 'your_region_id')
+        request = CommonRequest()
+        request.set_domain('ecs.aliyuncs.com')
+        request.set_version('2014-05-26')
+        request.set_action_name('DescribeInstanceStatus')
+        request.add_query_param('PageNumber', '1')
+        request.add_query_param('PageSize', '30')
+        request.add_query_param('ZoneId', 'cn-shanghai-d')
+        response = client.do_action_with_exception(request)
+
+
+        # 接口列表
+        https://help.aliyun.com/document_detail/25506.html?spm=a2c4g.11186623.6.1084.2f672eafMskx7S
+        # 调用DescribeInstances查询一台或多台实例的详细信息
+        DescribeInstances
+        # 调用CreateInstance创建一台ECS实例
+        CreateInstance
+        # 调用StartInstance启动一台实例
+        StartInstance
+        # 调用StopInstance停止运行一台实例
+        StopInstance
+        # 调用DescribeInstanceStatus获取一台或多台ECS实例的状态信息
+        DescribeInstanceStatus
+
+
+        # 创建ecs, CreateInstance, stop状态
+        # 参数列表
+        # https://help.aliyun.com/document_detail/25499.html?spm=a2c4g.11186623.6.1095.4347431djUtw2v
+
+        from aliyunsdkcore.client import AcsClient
+        from aliyunsdkcore.request import CommonRequest
+        client = AcsClient('LTAIzeBZre', 'fLJOBweE8qHKxrEOnc2FIF', 'cn-shanghai')
+        request = CommonRequest()
+        request.set_domain('ecs.aliyuncs.com')
+        request.set_version('2014-05-26')
+        request.set_action_name('CreateInstance')
+
+        request.add_query_param('ImageId', 'm-uf67jei1pul0xpfsfpfv')
+        request.add_query_param('InstanceType', 'ecs.c5.large')
+        request.add_query_param('RegionId', 'cn-shanghai')
+        request.add_query_param('ZoneId', 'cn-shanghai-f')
+        request.add_query_param('SecurityGroupId', 'sg-uf6i53pjsi11yuyrwyqs')
+        request.add_query_param('VSwitchId', 'vsw-uf630eqh0edoe9n3ig7lz')
+        request.add_query_param('Period', '1')
+        request.add_query_param('InstanceChargeType', 'PrePaid')
+        request.add_query_param('AutoRenew', 'true')
+        request.add_query_param('AutoRenewPeriod', '1')
+        request.add_query_param('InstanceName', 'xuesong-test1')
+        request.add_query_param('HostName', 'xuesong-test1')
+        request.add_query_param('Password', 'azuDa9nee6aiHaey')
+        request.add_query_param('SystemDisk.Size', '200')
+        request.add_query_param('SystemDisk.Category', 'cloud_efficiency')
+        request.add_query_param('SystemDisk.DiskName', 'xuesong-test1')
+
+        response = client.do_action_with_exception(request)
+        # InstanceId               # 实例ID，是访问实例的唯一标识
+        # RequestId                # 无论调用接口成功与否，都会返回请求ID
+
+        # 启动ecs   StartInstance
+        from aliyunsdkcore.client import AcsClient
+        from aliyunsdkcore.request import CommonRequest
+        client = AcsClient('LTAIzeBZre', 'fLJOBweE8qHKxrEOnc2FIF', 'cn-shanghai')
+        request = CommonRequest()
+        request.set_domain('ecs.aliyuncs.com')
+        request.set_version('2014-05-26')
+        request.set_action_name('StartInstance')
+
+        request.add_query_param('InstanceId', 'i-uf69e821lkybxke6yyno')
+        response = client.do_action_with_exception(request)
+
+
+        # 查询ecs信息 DescribeInstances
+        from aliyunsdkcore.client import AcsClient
+        from aliyunsdkcore.request import CommonRequest
+        import json
+
+        client = AcsClient('LTAIzeBZre', 'fLJOBweE8qHKxrEOnc2FIF', 'cn-shanghai')
+        request = CommonRequest()
+        request.set_domain('ecs.aliyuncs.com')
+        request.set_version('2014-05-26')
+        request.set_action_name('DescribeInstances')
+
+        request.add_query_param('InstanceIds', ['i-uf69e821lkybxke6yyno'])
+        response = client.do_action_with_exception(request)
+        jresponse = json.loads(response)
+        ip = jresponse['Instances']['Instance'][0]['NetworkInterfaces']['NetworkInterface'][0]['PrimaryIpAddress']
+        status = jresponse['Instances']['Instance'][0]['Status']
+        # Stopped  Stopping  Starting  Running 
+
+
+        # 停止ecs StopInstance
+        from aliyunsdkcore.client import AcsClient
+        from aliyunsdkcore.request import CommonRequest
+
+        client = AcsClient('LTAIzeBZre', 'fLJOBweE8qHKxrEOnc2FIF', 'cn-shanghai')
+        request = CommonRequest()
+        request.set_domain('ecs.aliyuncs.com')
+        request.set_version('2014-05-26')
+        request.set_action_name('StopInstance')
+
+        request.add_query_param('InstanceId', 'i-uf69e821lkybxke6yyno')
+        response = client.do_action_with_exception(request)
+
+
+
+        # 删除ecs DeleteInstance  释放一台按量付费实例或者到期的预付费（包年包月）实例
+        from aliyunsdkcore.client import AcsClient
+        from aliyunsdkcore.request import CommonRequest
+
+        client = AcsClient('LTAIzeBZre', 'fLJOBweE8qHKxrEOnc2FIF', 'cn-shanghai')
+        request = CommonRequest()
+        request.set_domain('ecs.aliyuncs.com')
+        request.set_version('2014-05-26')
+        request.set_action_name('DeleteInstance')
+
+        request.add_query_param('InstanceId', 'i-uf69e821lkybxke6yyno')
+        request.add_query_param('Force', 'true')
+
+        response = client.do_action_with_exception(request)
+
+
 
     PIL图像处理
 
@@ -5342,34 +5901,6 @@
                     #if j != 2:
                 print '|'
 
-    生成html文件表格
-
-        log_file = file('check.html', 'w')
-        log_file.write("""
-        <!DOCTYPE HTML>
-        <html lang="utr-8">
-        <head>
-        <meta charset="UTF-8">
-        <title></title>
-        </head>
-        <body>
-        <table align='center' border='0' cellPadding='0'  style='font-size:24px;'><tr ><td>状态统计</td></tr></table>
-        <style>.font{font-size:13px}</style>
-        <table  align='center' border='1' borderColor=gray cellPadding=3 width=1350  class='font'>
-        <tr style='background-color:#666666'>
-          <th width=65>IP</th>
-          <th width=65>状态</th>
-        </tr>
-        """)
-        for i in list:
-            log_file.write('<tr><td>%s</td><td>%s</td></tr>\n' %(i.split()[0],i.split()[1]) )
-        log_file.write("""
-        </table>
-        </body>
-        </html>
-        """)
-        log_file.flush()
-        log_file.close()
 
     井字游戏
 
@@ -5596,6 +6127,41 @@
             net.append(intf)
         print net
 
+
+    阿里云sdk接口
+
+        # 阿里云接口列表
+        https://develop.aliyun.com/tools/sdk?#/python
+
+        # python sdk模块
+        https://help.aliyun.com/document_detail/30003.html?spm=5176.doc29995.2.1.htCtSa
+
+        # 接口参数详解
+        https://help.aliyun.com/document_detail/25500.html?spm=5176.doc25499.6.691.lWwhc0
+
+        pip install aliyun-python-sdk-core aliyun-python-sdk-ecs
+
+        dir(aliyunsdkecs.request)
+        v20140526
+        aliyunsdkecs.request.v20140526
+
+        #!/usr/bin/env python
+        from aliyunsdkcore import client
+        from aliyunsdkecs.request.v20140526 import DescribeRegionsRequest
+
+        clt = client.AcsClient('SFAW************','Nc2nZ6dQoiqck0*************',
+        'cn-hangzhou')
+
+        request=DescribeRegionsRequest.DescribeRegionsRequest()
+
+        print dir(request)
+
+        request.set_accept_format('json')
+        request.set_action_name("CreateInstance")
+
+        print(clt.do_action(request))
+
+
     获取系统监控信息
 
         #!/usr/bin/env python
@@ -5675,6 +6241,40 @@
 
         if __name__ == "__main__":
             print mon().runAllGet()
+
+
+    nginx_5xx钉钉报警
+        import os
+        import sys
+        import datetime
+        import time
+        import requests
+        import json
+
+        mtime = (datetime.datetime.now()-datetime.timedelta(minutes=1)).strftime("%Y-%m-%dT%H:%M")
+
+        num = int(os.popen('''tail -n 100000 /app/nginx/logs/*_access.log | grep %s |grep 'status": 5'  |wc -l  ''' % mtime ).read().strip())
+        print num
+
+        if num > 20:
+            print 'baojing'
+            Robot = 'https://oapi.dingtalk.com/robot/send?access_token=e80aa431d237d97217827524'
+            headers = {'content-type': 'application/json'}
+            content = "lite nginx dmz01 5XX: %s" % num
+
+            dingdata = {
+                "msgtype": "text",
+                "text": {
+                    "content": content
+                }
+            }
+
+            try:
+                r = requests.post(url=Robot, data=json.dumps(dingdata), headers=headers, timeout=2).json()
+            except Exception as err:
+                print 'ERROR: notice dingding api error'
+                print str(err)
+
 
     获取主机名
 
@@ -6166,8 +6766,6 @@
 
 
 不定期更新下载地址：
-http://pan.baidu.com/s/1sjsFrmX
 https://github.com/liquanzhou/ops_doc
 
 请勿删除信息, 植入广告, 抵制不道德行为
-
