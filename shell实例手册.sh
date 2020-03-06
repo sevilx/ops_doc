@@ -3,7 +3,7 @@
 0 说明{
 
     手册制作: 雪松
-    更新日期: 2018-09-11
+    更新日期: 2020-03-06
 
     欢迎系统运维加入Q群: 198173206  # 加群请回答问题
     欢迎运维开发加入Q群: 365534424  # 不定期技术分享
@@ -117,6 +117,17 @@
 
     vim编辑器{
 
+        # 常用配置
+        set smartindent
+        set tabstop=4
+        set shiftwidth=4
+        set expandtab
+        set softtabstop=4
+        set noautoindent
+        set nosmartindent
+        set paste
+        set clipboard=unnamed
+
         gconf-editor           # 配置编辑器
         /etc/vimrc             # 配置文件路径
         vim +24 file           # 打开文件定位到指定行
@@ -174,8 +185,10 @@
         bzip2  -dv 1.tar.bz2                             # 解压bzip2
         bzip2 -v 1.tar                                   # bzip2压缩
         bzcat                                            # 查看bzip2
-        gzip A                                           # 直接压缩文件 # 压缩后源文件消失
-        gunzip A.gz                                      # 直接解压文件 # 解压后源文件消失
+        gzip file                                        # 直接压缩文件 # 压缩后源文件消失
+        gunzip file.gz                                   # 直接解压文件 # 解压后源文件消失
+        gzip -r dir/                                     # 递归压缩目录
+        gzip  -r -d dir/                                 # 递归解压目录
         gzip -dv 1.tar.gz                                # 解压gzip到tar
         gzip -v 1.tar                                    # 压缩tar到gz
         unzip zip.zip                                    # 解压zip
@@ -192,13 +205,13 @@
 
     }
 
-    svn更新代码{
+    svn{
 
         --force # 强制覆盖
         /usr/bin/svn --username user --password passwd co  $Code  ${SvnPath}src/                 # 检出整个项目
         /usr/bin/svn --username user --password passwd up  $Code  ${SvnPath}src/                 # 更新项目
         /usr/bin/svn --username user --password passwd export  $Code$File ${SvnPath}src/$File    # 导出个别文件
-        /usr/bin/svn --username user --password passwd export -r 版本号 svn路径 本地路径 --force # 导出指定版本
+        /usr/bin/svn --username user --password passwd export -r 版本号 svn路径 本地路径 --force   # 导出指定版本
 
     }
 
@@ -306,7 +319,6 @@
         rpm -Uvh               # 升级包
         rpm --test lynx        # 测试
         rpm -qc                # 软件包配置文档
-        rpm --import  /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-6     # 导入rpm的签名信息
         rpm --initdb           # 初始化rpm 数据库
         rpm --rebuilddb        # 重建rpm数据库  在rpm和yum无响应的情况使用 先 rm -f /var/lib/rpm/__db.00* 在重建
 
@@ -400,9 +412,10 @@
 
 3 系统{
 
-    wall        　  　                            # 给其它用户发消息
-    whereis ls                                    # 查找命令的目录
-    which                                         # 查看当前要执行的命令所在的路径
+    wall                                          # 给其它用户发消息
+    whereis ls                                    # 搜索程序名，而且只搜索二进制文件
+    which                                         # 查找命令是否存在,及存放位置
+    locate                                        # 不是实时查找，查找的结果不精确，但查找速度很快 每天更新 /var/lib/locatedb
     clear                                         # 清空整个屏幕
     reset                                         # 重新初始化屏幕
     cal                                           # 显示月历
@@ -798,7 +811,7 @@
         crontab -e               # 编辑周期任务
         #分钟  小时    天  月  星期   命令或脚本
         1,30  1-3/2    *   *   *      命令或脚本  >> file.log 2>&1
-        echo "40 7 * * 2 /root/sh">>/var/spool/cron/root    # 直接将命令写入周期任务
+        echo "40 7 * * 2 /root/sh">>/var/spool/cron/work    # 普通用户可直接写入定时任务
         crontab -l                                          # 查看自动周期性任务
         crontab -r                                          # 删除自动周期性任务
         cron.deny和cron.allow                               # 禁止或允许用户使用周期任务
@@ -876,6 +889,14 @@
 
     }
 
+    core崩溃文件查看{
+
+        gdb  core.13844
+        bt   # 查看函数调用信息(堆栈)
+
+    }
+
+
     libc.so故障修复{
 
         # 由于升级glibc导致libc.so不稳定,突然报错,幸好还有未退出的终端
@@ -890,6 +911,15 @@
         # 当前如果好使了，在执行下面强制替换软链接。如不好使，测试其他版本的libc.so文件
         ln -f -s /lib64/libc-2.7.so /lib64/libc.so.6
 
+    }
+
+    无法分配内存 {
+    
+        fork: Cannot allocate memory
+    
+        # 报错不一定是内存不够用，进程数或者线程数满了也会报这个错误， 可以适当增加 kernel.pid_max 的值，
+        cat /proc/sys/kernel/pid_max  # 默认3.2w
+    
     }
 
     sudo{
@@ -1297,14 +1327,14 @@
         show variables;               # 查看所有参数变量
         show status;                  # 运行状态
         show table status             # 查看表的引擎状态
-        show grants for user@'%'                        # 查看用户权限
-        drop table if exists user                       # 表存在就删除
-        create table if not exists user                 # 表不存在就创建
-        select host,user,password from user;            # 查询用户权限 先use mysql
-        create table ka(ka_id varchar(6),qianshu int);  # 创建表
-        show variables like 'character_set_%';          # 查看系统的字符集和排序方式的设定
-        show variables like '%timeout%';                # 查看超时相关参数
-        delete from user where user='';                 # 删除空用户
+        show grants for user@'%'                                    # 查看用户权限
+        drop table if exists user                                   # 表存在就删除
+        create table if not exists user                             # 表不存在就创建
+        select host,user,password from user;                        # 查询用户权限 先use mysql
+        create table ka(ka_id varchar(6),qianshu int);              # 创建表
+        show variables like 'character_set_%';                      # 查看系统的字符集和排序方式的设定
+        show variables like '%timeout%';                            # 查看超时相关参数
+        delete from user where user='';                             # 删除空用户
         delete from user where user='sss' and host='localhost' ;    # 删除用户
         drop user 'sss'@'localhost';                                # 使用此方法删除用户更为靠谱
         ALTER TABLE mytable ENGINE = MyISAM ;                       # 改变现有的表使用的存储引擎
@@ -1589,8 +1619,8 @@
         四、登录{
 
             192.168.1.5:28017      # http登录后可查看状态
-            ./mongo                # 默认登录后打开 test 库
-            ./mongo 192.168.1.5:27017/databaseName      # 直接连接某个库 不存在则创建  启动认证需要指定对应库才可登录
+            mongo                  # 默认登录后打开 test 库
+            mongo 192.168.1.5:27017/databaseName      # 直接连接某个库 不存在则创建  启动认证需要指定对应库才可登录
 
         }
 
@@ -1619,50 +1649,55 @@
                 conn       #连接数
                 time       #当前时间
 
+            mongostat -h 127.0.0.1 --port 27047 --authenticationDatabase admin -u zadmin -p Keaphh9e    # 查看mongo状态
+            mongotop  -h 127.0.0.1 --port 27047 --authenticationDatabase admin -u zadmin -p Keaphh9e    # 查看mongo集合的统计数据
+
         }
 
         六、常用命令{
 
             db.listCommands()     # 当前MongoDB支持的所有命令（同样可通过运行命令db.runCommand({"listCommands" : `1})来查询所有命令）
 
-            db.runCommand({"buildInfo" : 1})                # 返回MongoDB服务器的版本号和服务器OS的相关信息。
-            db.runCommand({"collStats" : 集合名})           # 返回该集合的统计信息，包括数据大小，已分配存储空间大小，索引的大小等。
-            db.runCommand({"distinct" : 集合名, "key" : 键, "query" : 查询文档})     # 返回特定文档所有符合查询文档指定条件的文档的指定键的所有不同的值。
-            db.runCommand({"dropDatabase" : 1})             # 清空当前数据库的信息，包括删除所有的集合和索引。
-            db.runCommand({"isMaster" : 1})                 # 检查本服务器是主服务器还是从服务器。
-            db.runCommand({"ping" : 1})                     # 检查服务器链接是否正常。即便服务器上锁，该命令也会立即返回。
-            db.runCommand({"repaireDatabase" : 1})          # 对当前数据库进行修复并压缩，如果数据库特别大，这个命令会非常耗时。
-            db.runCommand({"serverStatus" : 1})             # 查看这台服务器的管理统计信息。
+            db.runCommand({"buildInfo" : 1})                                  # 返回MongoDB服务器的版本号和服务器OS的相关信息
+            db.runCommand({"collStats" : tablename})                          # 返回该集合的统计信息，包括数据大小，已分配存储空间大小，索引的大小等
+            db.runCommand({"dropDatabase" : 1})                               # 清空当前数据库的信息，包括删除所有的集合和索引
+            db.runCommand({"isMaster" : 1})                                   # 检查本服务器是主服务器还是从服务器
+            db.runCommand({"ping" : 1})                                       # 检查服务器链接是否正常。即便服务器上锁，该命令也会立即返回
+            db.runCommand({"repaireDatabase" : 1})                            # 对当前数据库进行修复并压缩，如果数据库特别大，这个命令会非常耗时
+            db.runCommand({"serverStatus" : 1})                               # 查看这台服务器的管理统计信息
             # 某些命令必须在admin数据库下运行，如下两个命令：
-            db.runCommand({"renameCollection" : 集合名, "to"：集合名})     # 对集合重命名，注意两个集合名都要是完整的集合命名空间，如foo.bar, 表示数据库foo下的集合bar。
-            db.runCommand({"listDatabases" : 1})                           # 列出服务器上所有的数据库
+            db.runCommand({"renameCollection" : 集合名, "to"：集合名})          # 对集合重命名，注意两个集合名都要是完整的集合命名空间，如foo.bar, 表示数据库foo下的集合bar。
+            db.runCommand({"listDatabases" : 1})                              # 列出服务器上所有的数据库
+
+            mongo  172.20.20.1:27072/mdb --eval "db.tb.count();"              # shell执行mongo语句
             mongo --host  172.20.20.1 --port 27049
-            rs.config();                               # 查看集群配置
-            rs.status();                               # 查看集群节点的状态
-            db.currentOp()                             # 获取当前正在执行的操作,可对应命令链接到ip:port
-            rs.slaveOk()                               # 设置从库shell可读
-            rs.addArb("172.16.10.199:27020");          # 添加仲裁节点
-            rs.add({host: "172.20.80.216:27047", priority: 0, hidden: true})     # 添加从节点 hidden true隐藏节点[priority必须为0]  false不隐藏
-            rs.remove("172.20.80.216:27047");          # 删除节点
-            show dbs
-            use post                                   # 选择db
-            show collections                           # 查看文档
-            db.ids.find()                              # 查看文档内容
-            db.posts.count()                           # 查询文档条数
-            db.posts.find({_id:37530555})              # 查询指定id
-            db.posts.find().sort({_id:-1}).limit(1)    # 查询文档最后一条
-            db.feedback.drop()                         # 删除集合 需要权限
-            db.feedback.remove({})                     # 删除所有数据
-            mongorestore --host  172.2.2.1:27047 -d ndb  -c member --gzip --drop --dir=/dbbackup/20180118/account/member.bson.gz  # 恢复一个表
-            db.flow.ensureIndex({"status":1}, {backgroud:true})     # 后台加索引
-            db.flow.getIndexes()                                    # 查看索引
-            mongo  172.20.20.1:27072/mdb --eval "db.po.count();"    # shell执行mongo语句
-            db.posts.getIndexes()                      # 查询索引
-            db.posts.ensureIndex({"c_type":1},{background:true})         # 后台添加索引  1正向  -1反向
-            db.posts.dropIndex({"c_type":1});                            # 删除索引
-            mongostat -h 127.0.0.1 --port 27047 -u zadmin -p Keaphh9e --authenticationDatabase admin     # 查看mongo状态
-            mongotop -h 127.0.0.1 --port 27047 -u zadmin -p Keaphh9e --authenticationDatabase admin      # 查看mongo集合的统计数据
-            db.runCommand( { logRotate : 1 } )         # 日志轮转
+
+            rs.config();                                                      # 查看集群配置
+            rs.status();                                                      # 查看集群节点的状态
+            db.currentOp()                                                    # 获取当前正在执行的操作,可对应命令链接到ip:port
+            db.runCommand( { logRotate : 1 } )                                # 日志轮转
+            rs.slaveOk()                                                      # 设置从库shell可读
+            rs.addArb("172.16.10.199:27020");                                 # 添加仲裁节点
+            rs.add({host: "10.2.2.2:27047", priority: 0, hidden: true})       # 添加从节点 hidden true隐藏节点[priority必须为0]  false不隐藏
+            rs.remove("172.20.80.216:27047");                                 # 删除节点
+            rs.stepDown(120)                                                  # 主库上执行切换为从,120秒后切换回主
+            show dbs                                                          # 查询db
+            use post                                                          # 选择db
+            show tables                                                       # 查看文档列表
+            db.tb.drop()                                                      # 删除集合 需要权限
+            db.tb.remove({})                                                  # 删除所有数据
+            db.tb.count()                                                     # 查询文档条数
+            db.tb.find()                                                      # 查看文档内容
+            db.tb.find({_id:37530555})                                        # 查询指定id
+            db.tb.find().sort({_id:-1}).limit(1)                              # 查询文档最后一条
+            db.tb.find({"processed" : {"$ne" : true}}).limit(1);              # 字段不为 true
+            db.tb.find({"processed" : {"$eq" : true}}).limit(1);              # 字段为 true
+            db.tb.find({"processed" : {"$exists" : false}}).limit(1);         # 字段不存在
+
+            db.tb.ensureIndex({"status":1}, {background:true})                # 后台加索引
+            db.tb.getIndexes()                                                # 查看索引
+            db.tb.ensureIndex({"c_type":1},{backgrounnd:true})                # 后台添加索引  1正向  -1反向
+            db.tb.dropIndex({"c_type":1});                                    # 删除索引
 
         }
 
@@ -1682,37 +1717,35 @@
         }
 
         八、备份还原{
-
-            ./mongoexport -d test -c t1 -o t1.dat                 # 导出JSON格式
-                -c         # 指明导出集合
-                -d         # 使用库
-            ./mongoexport -d test -c t1 -csv -f num -o t1.dat     # 导出csv格式
-                -csv       # 指明导出csv格式
-                -f         # 指明需要导出那些例
-
-            db.t1.drop()                    # 登录后删除数据
-            ./mongoimport -d test -c t1 -file t1.dat                           # mongoimport还原JSON格式
-            ./mongoimport -d test -c t1 -type csv --headerline -file t1.dat    # mongoimport还原csv格式数据
-                --headerline                # 指明不导入第一行 因为第一行是列名
-
-            ./mongodump -d test -o /bak/mongodump                # mongodump数据备份
-            ./mongorestore -d test --drop /bak/mongodump/*       # mongorestore恢复
-                --drop      #恢复前先删除
-            db.t1.find()    #查看
-
-            # mongodump 虽然能不停机备份,但市区了获取实时数据视图的能力,使用fsync命令能在运行时复制数据目录并且不会损坏数据
+            # mongodump 虽然能不停机备份,但是为了获取实时数据视图的能力,使用fsync命令能在运行时复制数据目录并且不会损坏数据
             # fsync会强制服务器将所有缓冲区的数据写入磁盘.配合lock还阻止对数据库的进一步写入,知道释放锁为止
-            # 备份在从库上备份，不耽误读写还能保证实时快照备份
             db.runCommand({"fsync":1,"lock":1})   # 执行强制更新与写入锁
             db.$cmd.sys.unlock.findOne()          # 解锁
             db.currentOp()                        # 查看解锁是否正常
 
+            mongoexport -d test -c t1 -o t1.dat                 # 导出JSON格式
+                -c         # 指明导出集合
+                -d         # 使用库
+            mongoexport -d test -c t1 -csv -f num -o t1.dat     # 导出csv格式
+                -csv       # 指明导出csv格式
+                -f         # 指明需要导出那些例
+
+            mongoimport -d test -c t1 -file t1.dat                           # mongoimport还原JSON格式
+            mongoimport -d test -c t1 -type csv --headerline -file t1.dat    # mongoimport还原csv格式数据
+                --headerline                # 指明不导入第一行 因为第一行是列名
+
+            mongodump -d test -o /bak/mongodump                # mongodump数据备份
+            mongorestore -d test --drop /bak/mongodump/*       # mongorestore恢复
+                --drop      # 恢复前先删除
+                --gzip      # 压缩
+
             # 备份一个表
-            mongodump --host 127.0.0.1:27080 -d dbname  -c tablename  -o /data/reports/reports.bson
+            # --excludeCollection string # 排除指定的集合 要排除多个，使用多个
+            mongodump --host 127.0.0.1:27080 -d dbname  -c tablename  -o /data/reports/
+            mongodump --host 127.0.0.1:27080 -d dbname  -c tablename  -o /data/reports/reports  -u root -p tAvaa5yNUE --authenticationDatabase admin
 
             # 恢复一个表
-            mongorestore --host 127.0.0.1:27080 -d dbname  -c tablename --drop   --dir=/data/reports/reports.bson
-
+            mongorestore --host 127.0.0.1:27080 -d dbname  -c tablename --drop --dir=/data/reports/tablename.bson
 
             # 在线拷贝一个库
             db.copyDatabase(fromdb, todb, fromhost, username, password, mechanism)
@@ -1723,7 +1756,7 @@
         九、修复{
 
             # 当停电或其他故障引起不正常关闭时,会造成部分数据损坏丢失
-            ./mongod --repair      # 修复操作:启动时候加上 --repair
+            mongod --repair      # 修复操作:启动时候加上 --repair
             # 修复过程:将所有文档导出,然后马上导入,忽略无效文档.完成后重建索引。时间较长,会丢弃损坏文档
             # 修复数据还能起到压缩数据库的作用
             db.repairDatabase()    # 运行中的mongodb可使用 repairDatabase 修复当前使用的数据库
@@ -1801,8 +1834,9 @@
         export JAVA_HOME=/usr/local/jdk1.8.0_151
         export PATH=$JAVA_HOME/bin:$PATH
 
-        . /etc/profile    # 加载新的环境变量
-        jps -ml           # 查看java进程
+        . /etc/profile         # 加载新的环境变量
+        jps -ml                # 查看java进程
+        jstat -gc 18381 1s 30  # 查看java进程gc情况
     }
 
     redis动态加内存{
@@ -1904,7 +1938,7 @@
     net rpc shutdown -I IP_ADDRESS -U username%password                   # 远程关掉一台WINDOWS机器
     wget --random-wait -r -p -e robots=off -U Mozilla www.example.com     # 递归方式下载整个网站
     sshpass -p "$pwd" rsync -avzP /dir  user@$IP:/dir/                    # 指定密码避免交互同步目录
-    rsync -avzP --delete /dir user@$IP:/dir                               # 无差同步目录 可以快速清空大目录
+    rsync -avzP --delete /dir/ user@$IP:/dir/                             # 无差同步目录 可以快速清空大目录,末尾带/同步目录
     rsync -avzP -e "ssh -p 22 -e -o StrictHostKeyChecking=no" /dir user@$IP:/dir         # 指定ssh参数同步
 
     抓包{
@@ -1917,6 +1951,8 @@
         tcpdump tcp port 22                 # 抓包
         tcpdump -n -vv udp port 53          # 抓udp的dns包 并显示ip
         tcpdump port 10001 -A -s0           # 完整显示ascii数据包
+        tcpdump -i any  host x.x.x.x -s 0 -w /tmp/cap.pcap   # 对端ip
+        tcpdump -i any -s 0 host 172.20.81.107 or host 172.16.3.72 -C 50 -W 5 -w /tmp/20190122ng.cap
 
     }
 
@@ -2182,7 +2218,7 @@
     mount -l                                        # 查看分区挂载情况
     fdisk -l                                        # 查看磁盘分区状态
     fdisk /dev/hda3                                 # 分区
-    mkfs -t ext3  /dev/hda3                         # 格式化分区
+    mkfs -t ext4  /dev/hda3                         # 格式化分区
     fsck -y /dev/sda6                               # 对文件系统修复
     lsof |grep delete                               # 释放进程占用磁盘空间  列出进程后，查看文件是否存在，不存在则kill掉此进程
     tmpwatch -afv 10   /tmp                         # 删除10小时内未使用的文件  勿在重要目录使用
@@ -2324,6 +2360,20 @@
 
     }
 
+    阿里云扩容磁盘{
+
+        # 进入ECS 本实例磁盘，勾选在线扩容, 选择扩容磁盘
+        yum install cloud-utils-growpart
+        yum install xfsprogs
+        df -h    # 查看目前分区大小
+        fdisk -l # 查看磁盘设备
+        growpart /dev/vda 1         # 扩容分区 如果没有分区,默认整块,不需要执行
+        resize2fs /dev/vda1         # 扩容文件系统 ext4文件系统 
+        xfs_growfs /dev/vda1        # 扩容文件系统 xfs文件系统
+        df -h                       # 再查看分区大小,是否扩容
+
+    }
+
     raid原理与区别{
 
         raid0至少2块硬盘.吞吐量大,性能好,同时读写,但损坏一个就完蛋
@@ -2384,6 +2434,7 @@
     shopt                                 # 显示和设置shell中的行为选项
     sh -x                                 # 执行过程
     sh -n                                 # 检查语法
+    set -e                                # 若指令传回值不等于0，则立即退出shell
     (a=bbk)                               # 括号创建子shell运行
     basename /a/b/c                       # 从全路径中保留最后一层文件名或目录
     dirname                               # 取路径
@@ -4293,26 +4344,6 @@ delimiter
         wait        # 等待所有在此shell脚本中启动的后台任务完成
         exec 4>&-   # 关闭管道
 
-        #!/bin/bash
-
-        FifoFile="$$.fifo"
-        mkfifo $FifoFile
-        exec 6<>$FifoFile
-        rm $FifoFile
-        for ((i=0;i<=20;i++));do echo;done >&6
-
-        for u in `seq 1 $1`
-        do
-            read -u6
-            {
-                curl -s http://ch.com >>/dev/null
-                [ $? -eq 0 ] && echo "${u} 次成功" || echo "${u} 次失败"
-                echo >&6
-            } &
-        done
-        wait
-        exec 6>&-
-
     }
 
     shell并发函数{
@@ -4375,17 +4406,26 @@ delimiter
 
             #!/bin/bash
 
+            pnum=3
+
+            task () {
+                echo "$u start"
+                sleep 5
+                echo "$u done"
+            }
+
             FifoFile="$$.fifo"
             mkfifo $FifoFile
             exec 6<>$FifoFile
             rm $FifoFile
-            for ((i=0;i<=20;i++));do echo;done >&6
+            
+            for ((i=0;i<=$pnum;i++));do echo;done >&6
 
-            for u in `seq 1 $1`
+            for u in `seq 1 20`
             do
                 read -u6
                 {
-                    curl -s http://m.chinanews.com/?tt_from=shownews >>/dev/null
+                    task
                     [ $? -eq 0 ] && echo "${u} 次成功" || echo "${u} 次失败"
                     echo >&6
                 } &
@@ -4681,6 +4721,13 @@ delimiter
 
 }
 
+10 经验{
+    1.服务上线,在启动注册流量时大量报错, 下游服务摘除,重启后, 上游还用原有的链接去链接, 导致请求失败.
+    2.systemd守护的进程,在tmp下找不到对应文件, 配置安全tmp项PrivateTmp改为false PrivateTmp=false
+    3.统一服务内部调用关系,一个服务对应一个域名
+    4.统一服务服务返回的状态码,报警只需要针对5xx就可以发现问题.
+    5.在服务雪崩后,恢复服务,用户可能有大量重试,所以放流量也要小比例放流量,逐步恢复
+}
 
 
 不定期更新下载地址：
