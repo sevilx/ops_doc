@@ -11,7 +11,7 @@ nfs取消，用oss存储
 多份
 mq，redis这种，需要磁盘的如何挂载
 
-ksCZXKtisT8z7i
+
 
 
 
@@ -22,12 +22,10 @@ docker CE
 
 
 
-harbor.sa.gotokeep.com
-admin/Harbor12345
 
 
 
-docker login -u admin -p Harbor12345 10.24.160.232
+docker login -u admin -p PWD 10.24.160.232
 
 docker tag nginx:1.11.5 10.24.160.232/library/nginx:1.11.5
 docker push  10.24.160.232/library/nginx
@@ -38,7 +36,7 @@ docker pull 10.24.160.232/library/nginx:1.11.5
 
 
 
-docker login -u admin -p Harbor12345 p-harbor-01
+docker login -u admin -p PWD p-harbor-01
 
 docker tag nginx:1.11.5 p-harbor-01/library/nginx:1.11.5
 docker push  p-harbor-01/library/nginx
@@ -47,13 +45,13 @@ docker pull p-harbor-01/library/nginx:1.11.5
 
 p-harbor-01
 
-/data/init/set-dns.sh p-harbor-01.ali.keep 10.24.160.232
+/data/init/set-dns.sh p-harbor-01 10.24.160.232
 
 
 
-harbor.svc.ali.keep
+harbor.svc
 
-/data/init/set-dns.sh harbor.svc.ali.keep 10.24.160.232
+/data/init/set-dns.sh harbor.svc 10.24.160.232
 
 
 #配置后端存储
@@ -70,10 +68,10 @@ vim common/templates/registry/config.yml
 
 
     oss:
-        accesskeyid: LTAIFPNBSf2cCKIP
-        accesskeysecret: A3kcC62C82ixnIxiINRvZ3QGk5ltck
+        accesskeyid: LTAIFPNCKIP
+        accesskeysecret: A3kcC62C82ixnIx3QGk5ltck
         region: oss-cn-beijing
-        endpoint: keep-harbor.oss-cn-beijing-internal.aliyuncs.com
+        endpoint: harbor.oss-cn-beijing-internal.aliyuncs.com
         bucket: keep-harbor
         secure: false
         internal: true
@@ -82,11 +80,11 @@ vim common/templates/registry/config.yml
 
 
 LTAIFPNBSf2cCKIP
-A3kcC62C82ixnIxiINRvZ3QGk5ltck
+A3kcC6NRvZ3QGk5ltck
 
 
 
-auth = oss2.Auth('LTAIFPNBSf2cCKIP', 'A3kcC62C82ixnIxiINRvZ3QGk5ltck')
+auth = oss2.Auth('LTAIFPNBSf2cCKIP', 'A3kcC62C8vZ3QGk5ltck')
 service = oss2.Service(auth, 'oss-cn-beijing-internal.aliyuncs.com')
 
 print([b.name for b in oss2.BucketIterator(service)])
